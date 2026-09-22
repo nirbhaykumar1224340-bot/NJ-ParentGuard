@@ -2,6 +2,8 @@ package com.nj.parentguard.dashboard
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,7 +15,7 @@ fun ParentDashboard(onPairAnother: () -> Unit) {
     val uid = FirebaseAuth.getInstance().currentUser?.uid
     var children by remember { mutableStateOf(0) }
     var lastUpdate by remember { mutableStateOf("No location yet") }
-    var status by remember { mutableStateOf("Connected") }
+    var status by remember { mutableStateOf("Connected") }\n    var notifications by remember { mutableStateOf<List<String>>(emptyList()) }
 
     LaunchedEffect(uid) {
         if (uid == null) return@LaunchedEffect
