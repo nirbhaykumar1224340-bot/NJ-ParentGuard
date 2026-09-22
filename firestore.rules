@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      match /{sub=**} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+    match /families/{parentUid} {
+      allow read, write: if signedIn() && request.auth.uid == parentUid;
+      match /children/{childUid} {
+        allow read, write: if signedIn() &&
+          (request.auth.uid == parentUid || request.auth.uid == childUid);
+        match /{sub=**} {
+          allow read, write: if signedIn() &&
+            (request.auth.uid == parentUid || request.auth.uid == childUid);
+        }
+      }
+    }
+    match /pairingCodes/{code} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+      allow delete: if false;
+    }
+  }
+}
