@@ -7,6 +7,8 @@ import android.content.ContentValues
 import android.provider.MediaStore
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
+import android.content.Intent
+import android.os.BatteryManager
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import androidx.activity.ComponentActivity
@@ -168,6 +170,13 @@ class MainActivity : ComponentActivity() {
                                 )
                                 batch.commit().addOnSuccessListener {
                                     status = "Pairing complete."
+                                        LocationTracking.captureOnce(this@MainActivity)
+                                        val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
+                                        val battery = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                                        db.collection("users").document(childUid).set(
+                                            mapOf("batteryPercent" to battery, "lastSeenEpochMs" to System.currentTimeMillis()),
+                                            com.google.firebase.firestore.SetOptions.merge()
+                                        )
                                 }.addOnFailureListener {
                                     status = "Pairing failed."
                                 }
