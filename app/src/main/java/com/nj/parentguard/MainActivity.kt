@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
+import com.nj.parentguard.dashboard.ParentDashboard
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
@@ -52,34 +53,7 @@ class MainActivity : ComponentActivity() {
                 onParent = { role = "parent" },
                 onChild = { role = "child" }
             )
-            "parent" -> ParentPairingScreen(
-                generatedCode = generatedCode,
-                status = status,
-                onGenerate = {
-                    auth.signInAnonymously().addOnSuccessListener { result ->
-                        val uid = result.user?.uid ?: return@addOnSuccessListener
-                        val code = (100000..999999).random().toString()
-                        val ref = db.collection("pairingCodes").document(code)
-                        ref.set(
-                            mapOf(
-                                "parentUid" to uid,
-                                "code" to code,
-                                "createdAt" to FieldValue.serverTimestamp(),
-                                "expiresAtEpochMs" to System.currentTimeMillis() + 10 * 60 * 1000,
-                                "used" to false
-                            )
-                        ).addOnSuccessListener {
-                            generatedCode = code
-                            status = "Code valid for 10 minutes."
-                        }.addOnFailureListener {
-                            status = "Could not create pairing code."
-                        }
-                    }.addOnFailureListener {
-                        status = "Firebase sign-in failed."
-                    }
-                },
-                onBack = { role = null }
-            )
+            "parent" -> ParentDashboard(onPairAnother = { role = "parent" })
             "child" -> ChildPairingScreen(
                 code = pairingCode,
                 onCodeChange = { pairingCode = it.filter(Char::isDigit).take(6) },
