@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.messaging.FirebaseMessaging
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -93,7 +94,7 @@ class MainActivity : ComponentActivity() {
 
         when (role) {
             null -> RoleScreen(
-                onParent = { role = "parent" },
+                onParent = {\n                    auth.signInAnonymously().addOnSuccessListener { result ->\n                        val uid = result.user?.uid ?: return@addOnSuccessListener\n                        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->\n                            db.collection("users").document(uid).set(\n                                mapOf("role" to "parent", "fcmToken" to token, "createdAt" to FieldValue.serverTimestamp()),\n                                com.google.firebase.firestore.SetOptions.merge()\n                            )\n                        }\n                        role = "parent"\n                    }\n                },
                 onChild = { role = "child" }
             )
             "parent" -> ParentDashboard(onPairAnother = { role = "parentSetup" })
