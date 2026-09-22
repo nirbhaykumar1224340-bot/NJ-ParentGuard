@@ -94,7 +94,18 @@ class MainActivity : ComponentActivity() {
 
         when (role) {
             null -> RoleScreen(
-                onParent = {\n                    auth.signInAnonymously().addOnSuccessListener { result ->\n                        val uid = result.user?.uid ?: return@addOnSuccessListener\n                        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->\n                            db.collection("users").document(uid).set(\n                                mapOf("role" to "parent", "fcmToken" to token, "createdAt" to FieldValue.serverTimestamp()),\n                                com.google.firebase.firestore.SetOptions.merge()\n                            )\n                        }\n                        role = "parent"\n                    }\n                },
+                onParent = {
+                    auth.signInAnonymously().addOnSuccessListener { result ->
+                        val uid = result.user?.uid ?: return@addOnSuccessListener
+                        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                            db.collection("users").document(uid).set(
+                                mapOf("role" to "parent", "fcmToken" to token, "createdAt" to FieldValue.serverTimestamp()),
+                                com.google.firebase.firestore.SetOptions.merge()
+                            )
+                        }
+                        role = "parent"
+                    }
+                },
                 onChild = { role = "child" }
             )
             "parent" -> ParentDashboard(onPairAnother = { role = "parentSetup" })
@@ -165,7 +176,8 @@ class MainActivity : ComponentActivity() {
                         status = "Firebase sign-in failed."
                     }
                 },
-                onBack = { role = null }
+                onBack = { role = null },
+                onCamera = { captureCameraPhoto() }
             )
         }
     }
@@ -193,7 +205,8 @@ class MainActivity : ComponentActivity() {
         generatedCode: String?,
         status: String,
         onGenerate: () -> Unit,
-        onBack: () -> Unit
+        onBack: () -> Unit,
+        onCamera: () -> Unit
     ) {
         Column(
             Modifier.fillMaxSize().padding(24.dp),
@@ -237,6 +250,9 @@ class MainActivity : ComponentActivity() {
             )
             Button(onClick = onPair, modifier = Modifier.padding(top = 16.dp)) {
                 Text("Pair device")
+            }
+            OutlinedButton(onClick = onCamera, modifier = Modifier.padding(top = 12.dp).fillMaxWidth()) {
+                Text("Take camera photo")
             }
             if (status.isNotBlank()) Text(status, modifier = Modifier.padding(top = 12.dp))
             TextButton(onClick = onBack) { Text("Back") }
