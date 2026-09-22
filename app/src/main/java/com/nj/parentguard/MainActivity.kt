@@ -3,6 +3,11 @@ package com.nj.parentguard
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.content.ContentValues
+import android.provider.MediaStore
+import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
+import com.google.firebase.storage.FirebaseStorage
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -32,6 +37,41 @@ class MainActivity : ComponentActivity() {
 
     private val auth by lazy { FirebaseAuth.getInstance() }
     private val db by lazy { FirebaseFirestore.getInstance() }
+    private var pendingCameraUri: android.net.Uri? = null
+    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        val uri = pendingCameraUri
+        if (success && uri != null) uploadCameraPhoto(uri)
+        else uri?.let { contentResolver.delete(it, null, null) }
+        pendingCameraUri = null
+    }
+
+    private fun captureCameraPhoto() {
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "ParentGuard_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ParentGuard")
+        }
+        val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        if (uri == null) { Toast.makeText(this, "Camera storage unavailable", Toast.LENGTH_SHORT).show(); return }
+        pendingCameraUri = uri
+        cameraLauncher.launch(uri)
+    }
+
+    private fun uploadCameraPhoto(uri: android.net.Uri) {
+        val uid = auth.currentUser?.uid
+        if (uid == null) { Toast.makeText(this, "Sign in first", Toast.LENGTH_SHORT).show(); return }
+        val ref = FirebaseStorage.getInstance().reference.child("users/$uid/camera/${System.currentTimeMillis()}.jpg")
+        ref.putFile(uri).addOnSuccessListener {
+            ref.downloadUrl.addOnSuccessListener { url ->
+                db.collection("users").document(uid).collection("cameraCaptures").add(
+                    mapOf("url" to url.toString(), "createdAt" to FieldValue.serverTimestamp())
+                )
+            }
+            Toast.makeText(this, "Photo uploaded", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            Toast.makeText(this, "Photo upload failed", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
