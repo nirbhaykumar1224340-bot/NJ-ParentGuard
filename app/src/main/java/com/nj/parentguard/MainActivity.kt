@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.nj.parentguard.dashboard.ParentDashboard
+import com.nj.parentguard.location.LocationTracking
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LocationTracking.scheduleSync(this)
         setContent {
             MaterialTheme {
                 ParentGuardApp()
