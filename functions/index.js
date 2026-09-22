@@ -30,7 +30,7 @@ exports.forwardChildEventToParent = onDocumentCreated(
     const body = collection === "notifications"
       ? ((data.title || data.packageName || "Notification") + (data.text ? ": " + data.text : ""))
       : collection === "telephonyEvents"
-        ? ((data.type || "Telephony event") + (data.detail ? ": " + data.detail : ""))
+        ? ((data.type || "Telephony event") + ": " + (data.contactName ? data.contactName + " — " : "") + (data.number || "number unavailable") + (data.message ? ": " + data.message : ""))
         : "A new camera photo is available.";
 
     await getMessaging().send({
