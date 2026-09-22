@@ -23,6 +23,7 @@ import com.nj.parentguard.location.LocationTracking
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     private val permissions = arrayOf(
@@ -95,7 +96,25 @@ class MainActivity : ComponentActivity() {
                 onParent = { role = "parent" },
                 onChild = { role = "child" }
             )
-            "parent" -> ParentDashboard(onPairAnother = { role = "parent" })
+            "parent" -> ParentDashboard(onPairAnother = { role = "parentSetup" })
+            "parentSetup" -> ParentPairingScreen(
+                generatedCode = generatedCode,
+                status = status,
+                onGenerate = {
+                    auth.signInAnonymously().addOnSuccessListener { result ->
+                        val parentUid = result.user?.uid ?: return@addOnSuccessListener
+                        val code = Random.nextInt(100000, 1000000).toString()
+                        val expires = System.currentTimeMillis() + 10 * 60 * 1000L
+                        db.collection("pairingCodes").document(code).set(
+                            mapOf("parentUid" to parentUid, "expiresAtEpochMs" to expires, "used" to false)
+                        ).addOnSuccessListener {
+                            generatedCode = code
+                            status = "Code valid for 10 minutes."
+                        }.addOnFailureListener { status = "Could not generate code." }
+                    }.addOnFailureListener { status = "Firebase sign-in failed." }
+                },
+                onBack = { role = null }
+            )
             "child" -> ChildPairingScreen(
                 code = pairingCode,
                 onCodeChange = { pairingCode = it.filter(Char::isDigit).take(6) },
