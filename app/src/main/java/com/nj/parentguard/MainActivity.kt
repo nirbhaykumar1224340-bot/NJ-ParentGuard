@@ -139,7 +139,7 @@ class MainActivity : ComponentActivity() {
                                 val batch = db.batch()
                                 batch.set(
                                     db.collection("users").document(childUid),
-                                    mapOf("role" to "child", "createdAt" to FieldValue.serverTimestamp())
+                                    mapOf("role" to "child", "parentUid" to parentUid, "createdAt" to FieldValue.serverTimestamp())
                                 )
                                 batch.set(
                                     db.collection("families").document(parentUid)
