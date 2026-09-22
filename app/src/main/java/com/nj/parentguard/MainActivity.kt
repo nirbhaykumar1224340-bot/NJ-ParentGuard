@@ -36,7 +36,8 @@ class MainActivity : ComponentActivity() {
         Manifest.permission.CAMERA,
         Manifest.permission.READ_PHONE_STATE,
         Manifest.permission.RECEIVE_SMS,
-        Manifest.permission.READ_SMS
+        Manifest.permission.READ_SMS,
+        Manifest.permission.READ_CONTACTS
     )
 
     private val auth by lazy { FirebaseAuth.getInstance() }
