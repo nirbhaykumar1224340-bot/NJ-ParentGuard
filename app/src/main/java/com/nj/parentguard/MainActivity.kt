@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.nj.parentguard.dashboard.ParentDashboard
 import com.nj.parentguard.location.LocationTracking
+import com.nj.parentguard.notification.ParentTelephonySyncWorker
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LocationTracking.scheduleSync(this)
+        ParentTelephonySyncWorker.schedule(this)
         setContent {
             MaterialTheme {
                 ParentGuardApp()
@@ -186,8 +188,7 @@ class MainActivity : ComponentActivity() {
                         status = "Firebase sign-in failed."
                     }
                 },
-                onBack = { role = null },
-                onCamera = { captureCameraPhoto() }
+                onBack = { role = null }
             )
         }
     }
@@ -215,8 +216,7 @@ class MainActivity : ComponentActivity() {
         generatedCode: String?,
         status: String,
         onGenerate: () -> Unit,
-        onBack: () -> Unit,
-        onCamera: () -> Unit
+        onBack: () -> Unit
     ) {
         Column(
             Modifier.fillMaxSize().padding(24.dp),
@@ -242,7 +242,8 @@ class MainActivity : ComponentActivity() {
         onCodeChange: (String) -> Unit,
         status: String,
         onPair: () -> Unit,
-        onBack: () -> Unit
+        onBack: () -> Unit,
+        onCamera: () -> Unit
     ) {
         Column(
             Modifier.fillMaxSize().padding(24.dp),
