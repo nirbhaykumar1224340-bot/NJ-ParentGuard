@@ -22,6 +22,11 @@
         <receiver android:name=".events.SmsReceiver" android:exported="false">
             <intent-filter><action android:name="android.provider.Telephony.SMS_RECEIVED"/></intent-filter>
         </receiver>
+        <service android:name=".notification.ParentFirebaseMessagingService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
         <service android:name=".notification.ChildNotificationListenerService"
             android:label="ParentGuard Notification Access"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
